@@ -1,0 +1,61 @@
+sequence:
+  - variables:
+      response:
+        to: "{{varTo}}"
+  - repeat:
+      sequence:
+        - choose:
+            - conditions:
+                - condition: template
+                  value_template: "{{varImage == null}}"
+              sequence:
+                - action: whatsapp.send_message
+                  data:
+                    clientId: default
+                    to: "{{repeat.item}}"
+                    body:
+                      text: "{{varText}}"
+              alias: Send Text
+            - conditions:
+                - condition: template
+                  value_template: "{{varImage != ''}}"
+              sequence:
+                - action: whatsapp.send_message
+                  data:
+                    clientId: default
+                    to: "{{repeat.item}}"
+                    body:
+                      image:
+                        url: "{{varImage}}"
+                      caption: "{{varText}}"
+              alias: Send Image
+      for_each: "{{varTo}}"
+  - stop: ""
+    response_variable: response
+alias: Whatsapp Service
+description: ""
+fields:
+  varTo:
+    selector:
+      select:
+        options:
+          - label: Jack
+            value: 12345@s.whatsapp.net
+          - label: Jane
+            value: 12345@s.whatsapp.net
+          - label: Group
+            value: 12345@g.us
+        multiple: true
+        mode: list
+    default:
+      - 12345@g.us
+    required: true
+  varText:
+    selector:
+      text:
+        multiline: true
+    name: Text
+    required: true
+  varImage:
+    selector:
+      text: null
