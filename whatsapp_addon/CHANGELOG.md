@@ -1,6 +1,10 @@
+## 1.5.2
+
+- Updated Baileys to V7.0.0-rc.9 to resolve issue with QR code authentication
+
 ## 1.5.1
 
-- Updated Baileys to V6.7.18
+- Updated Baileys to V6.7.18 to resolve issue with sending messages to groups
 - Added support for send media for /media folder
 
 ## 1.5.0
