@@ -1,4 +1,5 @@
-import { Contact } from './Contact'
+import type { Contact } from './Contact'
+import type { WAMessageAddressingMode } from './Message'
 
 export type GroupParticipant = Contact & {
 	isAdmin?: boolean
@@ -14,18 +15,24 @@ export type RequestJoinMethod = 'invite_link' | 'linked_group_join' | 'non_admin
 
 export interface GroupMetadata {
 	id: string
+	notify?: string
 	/** group uses 'lid' or 'pn' to send messages */
-	addressingMode: 'pn' | 'lid'
+	addressingMode?: WAMessageAddressingMode
 	owner: string | undefined
+	ownerPn?: string | undefined
+	owner_country_code?: string | undefined
 	subject: string
 	/** group subject owner */
 	subjectOwner?: string
+	subjectOwnerPn?: string
 	/** group subject modification date */
 	subjectTime?: number
 	creation?: number
 	desc?: string
 	descOwner?: string
+	descOwnerPn?: string
 	descId?: string
+	descTime?: number
 	/** if this group is part of a community, it returns the jid of the community to which it belongs */
 	linkedParent?: string
 	/** is set when the group only allows admins to change group settings */
@@ -48,6 +55,7 @@ export interface GroupMetadata {
 	inviteCode?: string
 	/** the person who added you to group or changed some setting in group */
 	author?: string
+	authorPn?: string
 }
 
 export interface WAGroupCreateResponse {
