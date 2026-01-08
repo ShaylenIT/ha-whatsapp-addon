@@ -1,0 +1,99 @@
+sequence:
+  - variables:
+      response:
+        to: "{{varTo}}"
+  - if:
+      - condition: state
+        entity_id: binary_sensor.whatsapp_running
+        state: "on"
+    then:
+      - repeat:
+          sequence:
+            - choose:
+                - conditions:
+                    - condition: template
+                      value_template: "{{varImage == null}}"
+                  sequence:
+                    - action: whatsapp.send_message
+                      data:
+                        clientId: default
+                        to: "{{repeat.item}}"
+                        body:
+                          text: "{{varText}}"
+                  alias: Send Text
+                - conditions:
+                    - condition: template
+                      value_template: "{{varImage != ''}}"
+                  sequence:
+                    - action: whatsapp.send_message
+                      data:
+                        clientId: default
+                        to: "{{repeat.item}}"
+                        body:
+                          image:
+                            url: "{{varImage}}"
+                          caption: "{{varText}}"
+                  alias: Send Image
+          for_each: "{{varTo}}"
+    else:
+      - alias: Retry WhatsApp if started less than 5 min ago
+        if:
+          - condition: template
+            value_template: >-
+              {{ (((now() - states('sensor.uptime') |
+              as_datetime).total_seconds() / 60) | int ) <= 5 }}
+            alias: HA started less than 5 minutes ago
+        then:
+          - wait_for_trigger:
+              - trigger: state
+                entity_id:
+                  - binary_sensor.whatsapp_running
+                to: "on"
+            timeout:
+              hours: 0
+              minutes: 5
+              seconds: 0
+              milliseconds: 0
+          - action: script.whatsapp_service
+            metadata: {}
+            data:
+              varTo: "{{varTo}}"
+              varText: "{{varText}}"
+              varImage: "{{varImage}}"
+        else:
+          - action: notify.notify
+            metadata: {}
+            data:
+              message: "{{varText}}"
+  - stop: ""
+    response_variable: response
+alias: Whatsapp Service
+description: ""
+fields:
+  varTo:
+    selector:
+      select:
+        options:
+          - label: Jack
+            value: 12345@s.whatsapp.net
+          - label: Jane
+            value: 12345@s.whatsapp.net
+          - label: Group
+            value: 12345@g.us
+        multiple: true
+        mode: list
+    default:
+      - 12345@g.us
+    required: true
+  varText:
+    selector:
+      text:
+        multiline: true
+    name: Text
+    required: true
+  varImage:
+    selector:
+      text: null
+    name: Image
+mode: parallel
+max: 10
