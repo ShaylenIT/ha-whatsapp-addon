@@ -140,6 +140,30 @@ fs.readFile("data/options.json", function (error, content) {
     }
   });
 
+  app.post("/getGroups", async (req, res) => {
+    const request = req.body;
+
+    if (request.hasOwnProperty("clientId")) {
+      if (clients.hasOwnProperty(request.clientId)) {
+        const wapp = clients[request.clientId];
+
+        try {
+          const groups = await wapp.getGroups();
+          res.json(groups);
+        } catch (error) {
+          res.status(500).send({ error: error.message });
+          logger.error(error.message);
+        }
+      } else {
+        logger.error("Error in listing groups. Client ID not found.");
+        res.status(404).send({ error: "Client ID not found." });
+      }
+    } else {
+      logger.error("Error in listing groups. Please specify client ID.");
+      res.status(400).send({ error: "Please specify client ID." });
+    }
+  });
+
   app.post("/setStatus", (req, res) => {
     const status = req.body.status;
     if (req.body.hasOwnProperty("clientId")) {

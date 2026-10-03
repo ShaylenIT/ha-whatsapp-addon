@@ -223,6 +223,21 @@ class WhatsappClient extends EventEmitter {
     throw new WhatsappNumberNotFoundError(phone);
   };
 
+  getGroups = async () => {
+    if (this.#status.disconnected || !this.#status.connected) {
+      throw new WhatsappDisconnectedError();
+    }
+
+    const groups = await this.#conn.groupFetchAllParticipating();
+
+    return Object.values(groups).map((group) => ({
+      id: group.id,
+      name: group.subject,
+      description: group.desc || "",
+      participantCount: group.participants ? group.participants.length : 0,
+    }));
+  };
+
   waitForMessage(from, callback) {
     this.once("msg", (msg) => {
       if (msg.key.remoteJid === this.#toId(from)) callback(msg);
